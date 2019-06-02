@@ -1,7 +1,8 @@
-![](https://img.shields.io/badge/status-broken-red.svg)
+![Status](https://img.shields.io/badge/status-broken-red.svg)
+[![GitHub issues](https://img.shields.io/github/issues/jjv360/chrono-buddy.svg)](https://github.com/jjv360/chrono-buddy/issues)
 
 <h1 align="center">Chrono Buddy</h1>
-<h2 align="center">Companion app for Full Android watches</h1>
+<h3 align="center">Companion app for Full Android watches</h3>
 
 ## About
 
@@ -9,15 +10,17 @@ This project aims to replace the companion app provided by some manufacturers of
 
 Quite often, the interfaces provided on these watches is not very good. This app aims to replace those companion apps.
 
+This app also uses peer-to-peer networking to synchronise data between the watch and the phone, with no central authority.
+
 ## Features
 
 Feature                                 | Support
 ----------------------------------------|--------------
 **Phone to Watch connection**           | ❌
 Connect via BTLE                        | ❌
-Connect via IPFS (WiFi and Internet)    | ❌
+Connect via IPFS (WiFi and Internet)    | ⏳ In progress
 **Notifications**                       | ❌
-Receive notifications                   | ❌
+Receive notifications                   | ⏳ In progress
 Send actions from notifications         | ❌
 **Watch Faces**                         | ❌
 Display watch faces                     | ❌
