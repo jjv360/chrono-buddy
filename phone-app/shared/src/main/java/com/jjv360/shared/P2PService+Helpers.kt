@@ -89,7 +89,7 @@ fun P2PService.Companion.registerContact(accountAddress : String) : Promise<Unit
 
         // Search for the contact on the network
         val query = QueryOuterClass.ContactQuery.newBuilder().setAddress(accountAddress).build()
-        val options = QueryOuterClass.QueryOptions.newBuilder().setLimit(2).build()
+        val options = QueryOuterClass.QueryOptions.newBuilder().setWait(30).setLimit(2).build()
         val handle = Textile.instance().contacts.search(query, options)
 
         // Create listener

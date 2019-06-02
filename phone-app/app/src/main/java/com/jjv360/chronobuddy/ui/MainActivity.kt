@@ -2,13 +2,12 @@ package com.jjv360.chronobuddy.ui
 
 import android.app.AlertDialog
 import android.app.PendingIntent
+import android.app.ProgressDialog
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
 import com.ivan200.photobarcodelib.PhotoBarcodeScannerBuilder
 import com.jjv360.chronobuddy.R
 import com.jjv360.shared.P2PService
@@ -80,20 +79,22 @@ class MainActivity : AppCompatActivity() {
 
     fun pairWatchWithCode(txt : String) {
 
-        // Show loader
-        findViewById<View>(R.id.loader_overlay).visibility = View.VISIBLE
-        findViewById<TextView>(R.id.loader_overlay_text).text = "Searching for peer..."
+        val dlg = ProgressDialog(this)
+        dlg.setTitle("Pairing watch")
+        dlg.setMessage("Searching for peer...")
+        dlg.setCancelable(false)
+        dlg.show()
 
         // Decode account
         P2PService.registerContact(txt) successUi {
 
             // Done, hide loader
-            findViewById<View>(R.id.loader_overlay).visibility = View.GONE
+            dlg.dismiss()
 
         } failUi {
 
             // Failed! Show alert
-            findViewById<View>(R.id.loader_overlay).visibility = View.GONE
+            dlg.dismiss()
             AlertDialog.Builder(this)
                 .setTitle("Unable to Pair")
                 .setMessage(it.localizedMessage)
