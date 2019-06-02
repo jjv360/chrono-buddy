@@ -1,0 +1,189 @@
+package com.jjv360.shared
+
+import android.app.*
+import android.content.Intent
+import android.os.Build
+import android.os.IBinder
+import io.textile.pb.Model
+import io.textile.pb.View
+import io.textile.textile.Textile
+import io.textile.textile.TextileEventListener
+import java.lang.Exception
+
+class P2PService : Service(), TextileEventListener {
+
+    /** Static fields */
+    companion object {}
+
+    /** The PendingIntent to use to launch the main activity */
+    private var pendingIntent : PendingIntent? = null
+
+    /** Last error from Textile */
+    private var textileError : Exception? = null
+
+    /** True if textile has stopped itself */
+    private var textileStopped = false
+
+    /** Called when someone tried to bind our service */
+    override fun onBind(intent: Intent?): IBinder? {
+
+        // We don't support binding
+        return null
+
+    }
+
+    /** Called when someone tries to start our service with an Intent */
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+        // Fetch pending intent from the Intent and store it
+        pendingIntent = intent?.getParcelableExtra("launch-intent")
+        updateNotification()
+
+        // We want to stay alive
+        return START_STICKY
+
+    }
+
+    override fun onCreate() {
+
+        // Check which version of the notification to use
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+
+            // Create notification channel
+            val channel = NotificationChannel("p2p-service-channel", "P2P Service", NotificationManager.IMPORTANCE_LOW)
+            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+
+            // Become a foreground service
+            startForeground(1, Notification.Builder(this, "p2p-service-channel")
+                .setContentTitle("Connected to network")
+                .setContentText("You are currently connected to the P2P network.")
+                .setSmallIcon(R.drawable.ic_p2p_icon)
+                .setTicker("Connected to network.")
+                .setContentIntent(pendingIntent)
+                .build())
+
+        } else {
+
+            // Become a foreground service
+            startForeground(1, Notification.Builder(this)
+                .setContentTitle("Connecting...")
+                .setContentText("Attempting to connect to the peer-to-peer network...")
+                .setSmallIcon(R.drawable.ic_p2p_icon)
+                .setTicker("Connecting to the network...")
+                .setContentIntent(pendingIntent)
+                .build())
+
+        }
+
+        // Start Textile service
+        Textile.initialize(this.applicationContext, true, false)
+        Textile.instance().addEventListener(this)
+
+    }
+
+    /** Called when the system is destroying our service */
+    override fun onDestroy() {
+
+        // Stop textile service
+        Textile.instance().destroy()
+
+    }
+
+    /** Updates the Foreground notification with the current state of the network */
+    private fun updateNotification() {
+
+        // Get notification manager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+
+        // Create builder
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, "p2p-service-channel")
+        } else {
+            Notification.Builder(this)
+        }
+
+        // Check for initialization error
+        if (textileError != null) {
+
+            // Show failed
+            notificationManager.notify(
+                1, builder
+                    .setSmallIcon(R.drawable.ic_p2p_icon)
+                    .setContentIntent(pendingIntent)
+                    .setContentTitle("Connection failed")
+                    .setContentText(textileError!!.localizedMessage)
+                    .setTicker("Unable to connect to your watch.")
+                    .build()
+            )
+
+        } else if (textileStopped) {
+
+            // Show textile is suspended
+            notificationManager.notify(
+                1, builder
+                    .setSmallIcon(R.drawable.ic_p2p_icon)
+                    .setContentIntent(pendingIntent)
+                    .setContentTitle("Connection suspended")
+                    .setContentText("The peer-to-peer connection is sleeping.")
+                    .setTicker("Connection suspended.")
+                    .build()
+            )
+
+        } else {
+
+            // Show normal
+            notificationManager.notify(1, builder
+                .setSmallIcon(R.drawable.ic_p2p_icon)
+                .setContentIntent(pendingIntent)
+                .setContentTitle("Connected to watch")
+                .setContentText("Notifications are being forwarded to your watch.")
+                .setTicker("Connected to watch.")
+                .build())
+
+        }
+
+    }
+
+    override fun threadRemoved(threadId: String?) {}
+    override fun accountPeerAdded(peerId: String?) {}
+    override fun nodeStarted() {
+        textileStopped = false
+        textileError = null
+        updateNotification()
+    }
+    override fun clientThreadQueryResult(queryId: String?, thread: Model.Thread?) {}
+    override fun willStopNodeInBackgroundAfterDelay(seconds: Int) {}
+    override fun queryDone(queryId: String?) {}
+    override fun threadAdded(threadId: String?) {}
+    override fun nodeFailedToStop(e: Exception?) {
+        textileError = e
+        updateNotification()
+    }
+    override fun queryError(queryId: String?, e: Exception?) {
+        textileError = e
+        updateNotification()
+    }
+    override fun nodeOnline() {
+        textileStopped = false
+        textileError = null
+        updateNotification()
+    }
+    override fun notificationReceived(notification: Model.Notification?) {}
+    override fun accountPeerRemoved(peerId: String?) {}
+    override fun contactQueryResult(queryId: String?, contact: Model.Contact?) {}
+    override fun nodeFailedToStart(e: Exception?) {
+        textileError = e
+        updateNotification()
+    }
+    override fun canceledPendingNodeStop() {
+        textileError = null
+        updateNotification()
+    }
+    override fun nodeStopped() {
+        textileStopped = true
+        updateNotification()
+    }
+    override fun threadUpdateReceived(feedItem: View.FeedItem?) {}
+
+}
