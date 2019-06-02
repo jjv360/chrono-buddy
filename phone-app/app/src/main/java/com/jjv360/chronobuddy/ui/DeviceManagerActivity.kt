@@ -8,9 +8,9 @@ import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.ListView
 
-private const val REQUEST_ENABLE_BT = 1
-
 class DeviceManagerActivity : AppCompatActivity() {
+
+    private val REQUEST_ENABLE_BT = 1
 
     // UI
     var list : ListView? = null

@@ -1,15 +1,21 @@
 package com.jjv360.chronobuddy.ui
 
+import android.app.AlertDialog
 import android.app.PendingIntent
 import android.content.Intent
-import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.TextView
+import com.ivan200.photobarcodelib.PhotoBarcodeScannerBuilder
 import com.jjv360.chronobuddy.R
 import com.jjv360.shared.P2PService
+import com.jjv360.shared.registerContact
 import com.jjv360.shared.start
+import nl.komponents.kovenant.ui.failUi
+import nl.komponents.kovenant.ui.successUi
 
 
 class MainActivity : AppCompatActivity() {
@@ -32,11 +38,10 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
 
         // Check which menu option was selected
-        if (item?.itemId == R.id.mainmenu_manage_devices) {
+        if (item?.itemId == R.id.mainmenu_pair) {
 
-            // Show pair helper screen
-            startActivity(Intent(this, DeviceManagerActivity::class.java))
-            return true
+            // Start pairing
+            pairWatch()
 
         }
 
@@ -49,6 +54,54 @@ class MainActivity : AppCompatActivity() {
     fun sendViaBluetooth() {
 
 
+
+    }
+
+    /** Called to pair a new watch */
+    fun pairWatch() {
+
+        // TODO: Ask for camera permission access
+
+        // Scan QR code
+        PhotoBarcodeScannerBuilder()
+            .withActivity(this)
+            .withText("Scan the QR code on the watch")
+            .withOnlyQRCodeScanning()
+            .withResultListener {
+
+                // Check result
+                pairWatchWithCode(it.rawValue)
+
+            }
+            .build()
+            .start()
+
+    }
+
+    fun pairWatchWithCode(txt : String) {
+
+        // Show loader
+        findViewById<View>(R.id.loader_overlay).visibility = View.VISIBLE
+        findViewById<TextView>(R.id.loader_overlay_text).text = "Searching for peer..."
+
+        // Decode account
+        P2PService.registerContact(txt) successUi {
+
+            // Done, hide loader
+            findViewById<View>(R.id.loader_overlay).visibility = View.GONE
+
+        } failUi {
+
+            // Failed! Show alert
+            findViewById<View>(R.id.loader_overlay).visibility = View.GONE
+            AlertDialog.Builder(this)
+                .setTitle("Unable to Pair")
+                .setMessage(it.localizedMessage)
+                .setNeutralButton("Close", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show()
+
+        }
 
     }
 

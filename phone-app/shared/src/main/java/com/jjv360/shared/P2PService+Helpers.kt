@@ -5,9 +5,12 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import io.textile.pb.Model
+import io.textile.pb.QueryOuterClass
 import io.textile.textile.Textile
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.deferred
+import nl.komponents.kovenant.task
+import nl.komponents.kovenant.then
 
 /** Starts the service. Make sure to call this in the onCreate of any activity you use the service from. */
 fun P2PService.Companion.start(context : Context, launchIntent : PendingIntent) {
@@ -78,3 +81,37 @@ val P2PService.Companion.whenRunning : Promise<P2PService, Exception>
 /** List the registered companion apps, ie the Textile "contacts" */
 val P2PService.Companion.companions : List<Model.Contact>
     get() = Textile.instance().contacts.list().itemsList
+
+/** Register another device by it's account address and create a new "contact." on Textile */
+fun P2PService.Companion.registerContact(accountAddress : String) : Promise<Unit, Exception> {
+
+    return task {
+
+        // Search for the contact on the network
+        val query = QueryOuterClass.ContactQuery.newBuilder().setAddress(accountAddress).build()
+        val options = QueryOuterClass.QueryOptions.newBuilder().setLimit(2).build()
+        val handle = Textile.instance().contacts.search(query, options)
+
+        // Create listener
+        val defer = deferred<Model.Contact, Exception>()
+        contactQueryListeners.put(handle.id) { model, err ->
+
+            // Resolve promise
+            if (model == null || err != null)
+                defer.reject(err ?: Exception("An unknown error occurred."))
+            else
+                defer.resolve(model)
+
+        }
+
+        // Wait for promise
+        defer.promise.get()
+
+    } then {
+
+        // Found the contact on the network, now register it
+        Textile.instance().contacts.add(it)
+
+    }
+
+}

@@ -24,6 +24,9 @@ class P2PService : Service(), TextileEventListener {
         /** Startup listeners */
         val startupListeners = mutableListOf<(Exception?) -> Unit>()
 
+        /** Contact query listeners */
+        val contactQueryListeners = mutableMapOf<String, (Model.Contact?, Exception?) -> Unit>()
+
     }
 
     /** The PendingIntent to use to launch the main activity */
@@ -194,8 +197,15 @@ class P2PService : Service(), TextileEventListener {
         updateNotification()
     }
     override fun queryError(queryId: String?, e: Exception?) {
-        textileError = e
-        updateNotification()
+
+        // Call callback
+        val callback = contactQueryListeners.get(queryId)
+        if (callback != null)
+            callback(null, e)
+
+        // Remove it
+        contactQueryListeners.remove(queryId)
+
     }
     override fun nodeOnline() {
         textileStopped = false
@@ -204,7 +214,17 @@ class P2PService : Service(), TextileEventListener {
     }
     override fun notificationReceived(notification: Model.Notification?) {}
     override fun accountPeerRemoved(peerId: String?) {}
-    override fun contactQueryResult(queryId: String?, contact: Model.Contact?) {}
+    override fun contactQueryResult(queryId: String?, contact: Model.Contact?) {
+
+        // Call callback
+        val callback = contactQueryListeners.get(queryId)
+        if (callback != null)
+            callback(contact, null)
+
+        // Remove it
+        contactQueryListeners.remove(queryId)
+
+    }
     override fun nodeFailedToStart(e: Exception?) {
         System.out.println("P2PService: Failed to start")
 
