@@ -1,4 +1,4 @@
-package com.jjv360.chronobuddy.ui
+package com.jjv360.chronobuddy_watch
 
 import android.app.Application
 import nl.komponents.kovenant.android.startKovenant

@@ -13,7 +13,18 @@ import java.lang.Exception
 class P2PService : Service(), TextileEventListener {
 
     /** Static fields */
-    companion object {}
+    companion object {
+
+        /** Current instance, allows accessing the service in-process without going through the Binder interface */
+        var singleton : P2PService? = null
+
+        /** True if the textile instance has been inited */
+        var hasInitedTextile = false
+
+        /** Startup listeners */
+        val startupListeners = mutableListOf<(Exception?) -> Unit>()
+
+    }
 
     /** The PendingIntent to use to launch the main activity */
     private var pendingIntent : PendingIntent? = null
@@ -22,7 +33,7 @@ class P2PService : Service(), TextileEventListener {
     private var textileError : Exception? = null
 
     /** True if textile has stopped itself */
-    private var textileStopped = false
+    private var textileStopped = true
 
     /** Called when someone tried to bind our service */
     override fun onBind(intent: Intent?): IBinder? {
@@ -45,6 +56,10 @@ class P2PService : Service(), TextileEventListener {
     }
 
     override fun onCreate() {
+        System.out.println("P2PService: Starting")
+
+        // Store instance
+        singleton = this
 
         // Check which version of the notification to use
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -76,8 +91,11 @@ class P2PService : Service(), TextileEventListener {
 
         }
 
-        // Start Textile service
-        Textile.initialize(this.applicationContext, true, false)
+        // Start Textile instance if needed
+        if (!hasInitedTextile) Textile.initialize(this.applicationContext, true, false)
+        hasInitedTextile = true
+
+        // Add listener
         Textile.instance().addEventListener(this)
 
     }
@@ -85,8 +103,11 @@ class P2PService : Service(), TextileEventListener {
     /** Called when the system is destroying our service */
     override fun onDestroy() {
 
-        // Stop textile service
-        Textile.instance().destroy()
+        // Remove instance
+        singleton = null
+
+        // Remove listener
+        Textile.instance().removeEventListener(this)
 
     }
 
@@ -148,9 +169,21 @@ class P2PService : Service(), TextileEventListener {
     override fun threadRemoved(threadId: String?) {}
     override fun accountPeerAdded(peerId: String?) {}
     override fun nodeStarted() {
+        System.out.println("P2PService: Started")
+
+        // Update UI
         textileStopped = false
         textileError = null
         updateNotification()
+
+        // Notify listeners
+        startupListeners.forEach {
+            it(null)
+        }
+
+        // Clear listeners
+        startupListeners.clear()
+
     }
     override fun clientThreadQueryResult(queryId: String?, thread: Model.Thread?) {}
     override fun willStopNodeInBackgroundAfterDelay(seconds: Int) {}
@@ -173,8 +206,20 @@ class P2PService : Service(), TextileEventListener {
     override fun accountPeerRemoved(peerId: String?) {}
     override fun contactQueryResult(queryId: String?, contact: Model.Contact?) {}
     override fun nodeFailedToStart(e: Exception?) {
+        System.out.println("P2PService: Failed to start")
+
+        // Update UI
         textileError = e
         updateNotification()
+
+        // Notify listeners
+        startupListeners.forEach {
+            it(e)
+        }
+
+        // Clear listeners
+        startupListeners.clear()
+
     }
     override fun canceledPendingNodeStop() {
         textileError = null
