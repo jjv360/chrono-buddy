@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/status-broken-red.svg)
+
 <h1 align="center">Chrono Buddy</h1>
 <h2 align="center">Companion app for Full Android watches</h1>
 
