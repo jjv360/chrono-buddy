@@ -13,7 +13,10 @@ import android.widget.ImageView
 import com.github.sumimakito.awesomeqr.AwesomeQrRenderer
 import com.github.sumimakito.awesomeqr.option.RenderOption
 import com.github.sumimakito.awesomeqr.option.color.Color
+import com.google.gson.Gson
 import com.jjv360.chronobuddy_watch.networking.P2PService
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
 
 class MainActivity : Activity() {
@@ -25,21 +28,48 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main_loading)
 
         // Start our P2P service
-        startService(Intent(this, P2PService::class.java))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(Intent(this, P2PService::class.java))
+        } else {
+            startService(Intent(this, P2PService::class.java))
+        }
 
     }
 
     override fun onResume() {
         super.onResume()
 
-        // Check if paired
-//        P2PService.whenRunning successUi {
-//
-//            // Check if should show the Pair screen or the main screen
+        // Register ourself as the pair request handler
+        P2PService.onPairRequest = { deviceName ->
+
+            // TODO: Confirm with the user
+
+            // Show the watch face again
+            promiseOnUi {
+                setContentView(R.layout.activity_main_pair)
+            }
+
+            // Done
+            Promise.of(true)
+
+        }
+
+        // Wait for service to be running
+        P2PService.whenReady successUi {
+
+            // Check if should show the Pair screen or the main screen
 //            if (P2PService.companions.isEmpty())
-//                setContentView(R.layout.activity_main_pair)
-//
-//        }
+                setContentView(R.layout.activity_main_pair)
+
+        }
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        // Remove pair request handler
+        P2PService.onPairRequest = null
 
     }
 
@@ -49,10 +79,17 @@ class MainActivity : Activity() {
         // Show QR code screen
         setContentView(R.layout.activity_main_paircode)
 
+        // Create QR payload
+        val json = Gson().toJson(mapOf(
+            "action" to "pair",
+            "mode" to "ipfs",
+            "id" to P2PService.singleton?.ipfs?.peerID
+        ))
+
         // Generate a QR code
         // TODO: Make it look nice
         val renderOption = RenderOption()
-//        renderOption.content = P2PService.accountAddress
+        renderOption.content = json
         renderOption.roundedPatterns = true
         renderOption.borderWidth = 0
         renderOption.patternScale = 1f

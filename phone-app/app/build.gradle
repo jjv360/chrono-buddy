@@ -44,6 +44,14 @@ dependencies {
 
     // QR scanning support
     implementation 'com.github.ivan200:PhotoBarcode:1.1.1'
+
+    // IPFS support
     compile project(path: ':ipfs')
+
+    // JSON support
+    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+
+    // HTTP support
+    implementation 'io.karn:khttp-android:0.1.0'
 
 }

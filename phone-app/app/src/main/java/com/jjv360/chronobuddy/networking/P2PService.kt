@@ -7,6 +7,7 @@ import android.os.IBinder
 import com.jjv360.chronobuddy.ui.MainActivity
 import com.jjv360.ipfs.IPFS
 import com.jjv360.shared.R
+import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
 import java.util.logging.Logger
 
@@ -17,6 +18,10 @@ class P2PService : Service() {
 
         /** Current instance, allows accessing the service in-process without going through the Binder interface */
         var singleton: P2PService? = null
+
+        /** Startup promise */
+        var startupPromise = deferred<P2PService, Exception>()
+        var whenReady = startupPromise.promise
 
     }
 
@@ -47,6 +52,17 @@ class P2PService : Service() {
 
         // Store singleton
         singleton = this
+
+        // Start IPFS
+        task {
+
+            // Start IPFS
+            ipfs.start()
+
+            // Done, inform anyone who's waiting for us to finish loading
+            startupPromise.resolve(this)
+
+        }
 
         // TODO: Load existing watch peer IDs and attempt to connect
 

@@ -23,6 +23,17 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    // HACK: Fix a bug in Ktor, or in kotlin itself, who knows
+    packagingOptions {
+        exclude 'META-INF/kotlinx-io.kotlin_module'
+        exclude 'META-INF/io.netty.versions.properties'
+        exclude 'META-INF/INDEX.LIST'
+        exclude 'META-INF/atomicfu.kotlin_module'
+        exclude 'META-INF/kotlinx-coroutines-io.kotlin_module'
+        exclude 'META-INF/kotlinx-coroutines-core.kotlin_module'
+    }
+
 }
 
 dependencies {
@@ -43,6 +54,15 @@ dependencies {
 
     // QR generator support
     implementation 'com.github.SumiMakito:AwesomeQRCode:1.2.0'
+
+    // IPFS support
     compile project(path: ':ipfs')
+
+    // JSON support
+    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
+
+    // HTTP server
+    implementation "io.ktor:ktor-server-core:1.2.1"
+    implementation "io.ktor:ktor-server-netty:1.2.1"
 
 }

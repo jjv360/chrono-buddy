@@ -4,18 +4,27 @@ import android.app.AlertDialog
 import android.app.PendingIntent
 import android.app.ProgressDialog
 import android.content.Intent
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import com.github.salomonbrys.kotson.fromJson
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.ivan200.photobarcodelib.PhotoBarcodeScannerBuilder
 import com.jjv360.chronobuddy.R
-import com.jjv360.shared.P2PService
-import com.jjv360.shared.registerContact
-import com.jjv360.shared.start
+import com.jjv360.chronobuddy.networking.P2PService
+import khttp.post
+import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.failUi
+import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.logging.Logger
 
 
 class MainActivity : AppCompatActivity() {
@@ -25,8 +34,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         // Start our P2P service
-        val relaunchIntent = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
-        P2PService.start(this, relaunchIntent)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(Intent(this, P2PService::class.java))
+        } else {
+            startService(Intent(this, P2PService::class.java))
+        }
 
     }
 
@@ -67,10 +79,13 @@ class MainActivity : AppCompatActivity() {
             .withActivity(this)
             .withText("Scan the QR code on the watch")
             .withOnlyQRCodeScanning()
-            .withResultListener {
+            .withResultListener { barcode ->
 
                 // Check result
-                pairWatchWithCode(it.rawValue)
+                Logger.getLogger("MainActivity").info("Scanned pairing info " + barcode.rawValue)
+                promiseOnUi {
+                    pairWatchWithPayload(barcode.rawValue)
+                }
 
             }
             .build()
@@ -78,19 +93,41 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    fun pairWatchWithCode(txt : String) {
+    /** Called once a pairing payload has been scanned */
+    fun pairWatchWithPayload(txt : String) {
 
+        // Show progress dialog
         val dlg = ProgressDialog(this)
         dlg.setTitle("Pairing watch")
-        dlg.setMessage("Searching for peer...")
+        dlg.setMessage("Connecting to device...")
         dlg.setCancelable(false)
         dlg.show()
 
-        // Decode account
-        P2PService.registerContact(txt) then {
+        // Start task
+        P2PService.whenReady then {
 
-            // Invite the other device to start a thread
+            // Decode the JSON
+            val json = Gson().fromJson<Map<String, String>>(txt)
 
+            // Check pairing mode
+            val mode = json["mode"]
+            if (mode == "ipfs") {
+
+                // Extract peer ID
+                val peerID = json["id"] ?: throw Exception("No peer ID found in the pair request.")
+
+                // Connect to the remote device
+                promiseOnUi { dlg.setMessage("Connecting via IPFS...") }
+
+                // Pair with IPFS service
+                pairWatchWithIPFS(peerID)
+
+            } else {
+
+                // Unknown pairing mode
+                throw Exception("Unknown pairing mode '$mode'.")
+
+            }
 
         } successUi {
 
@@ -109,6 +146,26 @@ class MainActivity : AppCompatActivity() {
                 .show()
 
         }
+
+    }
+
+    /** Pairs to the watch via an IPFS peer to peer channel */
+    private fun pairWatchWithIPFS(peerID : String) {
+
+        // Connect to remote service
+        val service = P2PService.singleton!!.ipfs.connectService("/x/chronobuddy-sync", peerID)
+
+        // Send pair request
+        Logger.getLogger("MainActivity").info("POSTing to http://127.0.0.1:${service.port}/v1/pair")
+        val response = post("http://127.0.0.1:${service.port}/v1/pair", data = Gson().toJson(mapOf(
+            "device_name" to "Android Phone"
+        )))
+
+        // Process response
+        val json = Gson().fromJson<JsonObject>(response.text)
+        val status = json["status"].asString
+        if (status != "ok")
+            throw Exception(json["error_text"].asString ?: "Couldn't pair to the device.")
 
     }
 
