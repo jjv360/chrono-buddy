@@ -1,8 +1,8 @@
 ![Status](https://img.shields.io/badge/status-broken-red.svg)
 [![GitHub issues](https://img.shields.io/github/issues/jjv360/chrono-buddy.svg)](https://github.com/jjv360/chrono-buddy/issues)
 
-<h1 align="center">Chrono Buddy</h1>
-<h3 align="center">Companion app for Full Android watches</h3>
+<h3 align="center">Chrono Buddy</h3>
+<p align="center">Companion app for Full Android watches</p>
 
 ## About
 
