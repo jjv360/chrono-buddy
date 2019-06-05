@@ -1,1 +1,1 @@
-include ':app', ':watchapp', ':shared'
+include ':app', ':watchapp', ':shared', ':ipfs'

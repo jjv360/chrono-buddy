@@ -4,11 +4,16 @@ import android.app.*
 import android.content.Intent
 import android.os.Build
 import android.os.IBinder
+import com.jjv360.ipfs.IPFS
+import com.jjv360.ipfs.IPFSServer
 import io.textile.pb.Model
 import io.textile.pb.View
 import io.textile.textile.Textile
 import io.textile.textile.TextileEventListener
+import nl.komponents.kovenant.task
+import nl.komponents.kovenant.then
 import java.lang.Exception
+import java.util.logging.Logger
 
 class P2PService : Service(), TextileEventListener {
 
@@ -29,6 +34,9 @@ class P2PService : Service(), TextileEventListener {
 
     }
 
+    /** The IPFS instance */
+    var ipfs = IPFS(this)
+
     /** The PendingIntent to use to launch the main activity */
     private var pendingIntent : PendingIntent? = null
 
@@ -37,6 +45,9 @@ class P2PService : Service(), TextileEventListener {
 
     /** True if textile has stopped itself */
     private var textileStopped = true
+
+    /** The IPFS service that we receive connections on */
+    private var service : IPFSServer? = null
 
     /** Called when someone tried to bind our service */
     override fun onBind(intent: Intent?): IBinder? {
@@ -60,6 +71,15 @@ class P2PService : Service(), TextileEventListener {
 
     override fun onCreate() {
         System.out.println("P2PService: Starting")
+
+        // Start IPFS daemon
+        task {
+
+            // Register P2P service
+            service = ipfs.createService("/x/chronobuddy-sync")
+            Logger.getLogger("P2PService").info("Service ${service?.serviceName} started, requests coming in on port ${service?.serverSocket?.localPort}")
+
+        }
 
         // Store instance
         singleton = this
@@ -95,8 +115,8 @@ class P2PService : Service(), TextileEventListener {
         }
 
         // Start Textile instance if needed
-        if (!hasInitedTextile) Textile.initialize(this.applicationContext, true, false)
-        hasInitedTextile = true
+//        if (!hasInitedTextile) Textile.initialize(this.applicationContext, true, false)
+//        hasInitedTextile = true
 
         // Add listener
         Textile.instance().addEventListener(this)

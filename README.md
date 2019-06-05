@@ -17,8 +17,9 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 Feature                                 | Support
 ----------------------------------------|--------------
 **Phone to Watch connection**           | ❌
-Connect via BTLE                        | ❌
+Connect via Bluetooth LE                | ❌
 Connect via IPFS (WiFi and Internet)    | ⏳ In progress
+- Encrypted communication               | ❌
 **Notifications**                       | ❌
 Receive notifications                   | ⏳ In progress
 Send actions from notifications         | ❌
@@ -31,7 +32,7 @@ Watch face file format                  | ❌
 
 Device                          | Support
 --------------------------------|---------------
-Zeblaze Thor 4                  | ⚠️ Unstable
+Zeblaze (Alps) THOR 4           | ⚠️ Unstable
 
 ## Credits
 

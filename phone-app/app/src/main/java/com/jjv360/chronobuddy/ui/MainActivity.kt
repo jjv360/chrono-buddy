@@ -13,6 +13,7 @@ import com.jjv360.chronobuddy.R
 import com.jjv360.shared.P2PService
 import com.jjv360.shared.registerContact
 import com.jjv360.shared.start
+import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.successUi
 
@@ -86,7 +87,12 @@ class MainActivity : AppCompatActivity() {
         dlg.show()
 
         // Decode account
-        P2PService.registerContact(txt) successUi {
+        P2PService.registerContact(txt) then {
+
+            // Invite the other device to start a thread
+
+
+        } successUi {
 
             // Done, hide loader
             dlg.dismiss()

@@ -13,7 +13,7 @@ import android.widget.ImageView
 import com.github.sumimakito.awesomeqr.AwesomeQrRenderer
 import com.github.sumimakito.awesomeqr.option.RenderOption
 import com.github.sumimakito.awesomeqr.option.color.Color
-import com.jjv360.shared.*
+import com.jjv360.chronobuddy_watch.networking.P2PService
 import nl.komponents.kovenant.ui.successUi
 
 class MainActivity : Activity() {
@@ -25,8 +25,7 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main_loading)
 
         // Start our P2P service
-        val relaunchIntent = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
-        P2PService.start(this, relaunchIntent)
+        startService(Intent(this, P2PService::class.java))
 
     }
 
@@ -34,13 +33,13 @@ class MainActivity : Activity() {
         super.onResume()
 
         // Check if paired
-        P2PService.whenRunning successUi {
-
-            // Check if should show the Pair screen or the main screen
-            if (P2PService.companions.isEmpty())
-                setContentView(R.layout.activity_main_pair)
-
-        }
+//        P2PService.whenRunning successUi {
+//
+//            // Check if should show the Pair screen or the main screen
+//            if (P2PService.companions.isEmpty())
+//                setContentView(R.layout.activity_main_pair)
+//
+//        }
 
     }
 
@@ -53,7 +52,7 @@ class MainActivity : Activity() {
         // Generate a QR code
         // TODO: Make it look nice
         val renderOption = RenderOption()
-        renderOption.content = P2PService.accountAddress
+//        renderOption.content = P2PService.accountAddress
         renderOption.roundedPatterns = true
         renderOption.borderWidth = 0
         renderOption.patternScale = 1f

@@ -4,6 +4,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.util.JsonReader
+import io.textile.pb.Mobile
 import io.textile.pb.Model
 import io.textile.pb.QueryOuterClass
 import io.textile.textile.Textile
@@ -11,6 +13,7 @@ import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
 import nl.komponents.kovenant.then
+import java.util.*
 
 /** Starts the service. Make sure to call this in the onCreate of any activity you use the service from. */
 fun P2PService.Companion.start(context : Context, launchIntent : PendingIntent) {
@@ -113,5 +116,55 @@ fun P2PService.Companion.registerContact(accountAddress : String) : Promise<Unit
         Textile.instance().contacts.add(it)
 
     }
+
+}
+
+/** Send a request to another account */
+fun P2PService.Companion.request(remoteAddress : String, name : String, data : String) : Promise<String, Exception> = task {
+
+    // Find contact
+    var contact = Textile.instance().contacts.get(remoteAddress)
+    if (contact == null) {
+
+        // Search for the contact on the network
+        val query = QueryOuterClass.ContactQuery.newBuilder().setAddress(remoteAddress).build()
+        val options = QueryOuterClass.QueryOptions.newBuilder().setWait(30).setLimit(2).build()
+        val handle = Textile.instance().contacts.search(query, options)
+
+        // Create listener
+        val defer = deferred<Model.Contact, Exception>()
+        contactQueryListeners.put(handle.id) { model, err ->
+
+            // Resolve promise
+            if (model == null || err != null)
+                defer.reject(err ?: Exception("An unknown error occurred."))
+            else
+                defer.resolve(model)
+
+        }
+
+        // Wait for promise, then add the contact
+        contact = defer.promise.get()
+        Textile.instance().contacts.add(contact)
+
+    }
+
+    // Find existing thread between these users
+//    val threads = Textile.instance().contacts.threads(remoteAddress)
+//    for (thread in threads.itemsList) {
+//
+//        thread.
+//
+//    }
+//
+//    // Find threads the specified user is connected to
+//    Textile.instance().contacts.threads()
+//
+//    Textile.instance().threads.
+//
+//    // Create request
+//    JsonReader.stringify()
+
+    ""
 
 }

@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme">
 
         <!-- Networking service -->
-        <service android:name="com.jjv360.shared.P2PService" android:enabled="true" android:exported="false" />
+        <service android:name=".networking.P2PService" android:enabled="true" android:exported="false" />
 
         <!-- Main watch screen interface -->
         <activity android:name=".MainActivity" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
