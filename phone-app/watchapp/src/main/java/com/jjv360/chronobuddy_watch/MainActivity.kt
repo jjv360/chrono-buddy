@@ -16,8 +16,10 @@ import com.github.sumimakito.awesomeqr.option.color.Color
 import com.google.gson.Gson
 import com.jjv360.chronobuddy_watch.networking.P2PService
 import nl.komponents.kovenant.Promise
+import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
+import java.util.logging.Logger
 
 class MainActivity : Activity() {
 
@@ -39,27 +41,29 @@ class MainActivity : Activity() {
     override fun onResume() {
         super.onResume()
 
-        // Register ourself as the pair request handler
-        P2PService.onPairRequest = { deviceName ->
+        // Wait for service to start
+        P2PService.whenReady then {
 
-            // TODO: Confirm with the user
-
-            // Show the watch face again
+            // Check if should show the Pair screen or the main screen
+//            if (P2PService.companions.isEmpty())
             promiseOnUi {
                 setContentView(R.layout.activity_main_pair)
             }
 
-            // Done
-            Promise.of(true)
+            // Register pair handler
+            it.rpc?.register("pair") {
 
-        }
+                // TODO: Confirm with the user
 
-        // Wait for service to be running
-        P2PService.whenReady successUi {
+                // Show the watch face again
+                promiseOnUi {
+                    setContentView(R.layout.activity_main_pair)
+                }
 
-            // Check if should show the Pair screen or the main screen
-//            if (P2PService.companions.isEmpty())
-                setContentView(R.layout.activity_main_pair)
+                // Done
+                Promise.of(true)
+
+            }
 
         }
 
@@ -69,7 +73,9 @@ class MainActivity : Activity() {
         super.onPause()
 
         // Remove pair request handler
-        P2PService.onPairRequest = null
+        P2PService.whenReady then {
+            it.rpc?.remove("pair")
+        }
 
     }
 
@@ -82,8 +88,8 @@ class MainActivity : Activity() {
         // Create QR payload
         val json = Gson().toJson(mapOf(
             "action" to "pair",
-            "mode" to "ipfs",
-            "id" to P2PService.singleton?.ipfs?.peerID
+            "mode" to "ws.in",
+            "id" to P2PService.singleton?.deviceID
         ))
 
         // Generate a QR code

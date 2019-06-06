@@ -15,6 +15,7 @@ import com.google.gson.JsonObject
 import com.ivan200.photobarcodelib.PhotoBarcodeScannerBuilder
 import com.jjv360.chronobuddy.R
 import com.jjv360.chronobuddy.networking.P2PService
+import com.jjv360.shared.PubSub
 import khttp.post
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.task
@@ -122,6 +123,17 @@ class MainActivity : AppCompatActivity() {
                 // Pair with IPFS service
                 pairWatchWithIPFS(peerID)
 
+            } else if (mode == "ws.in") {
+
+                // Extract peer ID
+                val peerID = json["id"] ?: throw Exception("No peer ID found in the pair request.")
+
+                // Connect to the remote device
+                promiseOnUi { dlg.setMessage("Connecting via WebSocket...") }
+
+                // Pair with IPFS service
+                pairWatchWithWS(peerID)
+
             } else {
 
                 // Unknown pairing mode
@@ -152,20 +164,37 @@ class MainActivity : AppCompatActivity() {
     /** Pairs to the watch via an IPFS peer to peer channel */
     private fun pairWatchWithIPFS(peerID : String) {
 
+        throw Exception("IPFS support is disabled")
+
         // Connect to remote service
-        val service = P2PService.singleton!!.ipfs.connectService("/x/chronobuddy-sync", peerID)
+//        val service = P2PService.singleton!!.ipfs.connectService("/x/chronobuddy-sync", peerID)
+//
+//        // Send pair request
+//        Logger.getLogger("MainActivity").info("POSTing to http://127.0.0.1:${service.port}/v1/pair")
+//        val response = post("http://127.0.0.1:${service.port}/v1/pair", data = Gson().toJson(mapOf(
+//            "device_name" to "Android Phone"
+//        )))
+//
+//        // Process response
+//        val json = Gson().fromJson<JsonObject>(response.text)
+//        val status = json["status"].asString
+//        if (status != "ok")
+//            throw Exception(json["error_text"].asString ?: "Couldn't pair to the device.")
 
-        // Send pair request
-        Logger.getLogger("MainActivity").info("POSTing to http://127.0.0.1:${service.port}/v1/pair")
-        val response = post("http://127.0.0.1:${service.port}/v1/pair", data = Gson().toJson(mapOf(
-            "device_name" to "Android Phone"
-        )))
+    }
 
-        // Process response
-        val json = Gson().fromJson<JsonObject>(response.text)
-        val status = json["status"].asString
-        if (status != "ok")
-            throw Exception(json["error_text"].asString ?: "Couldn't pair to the device.")
+    /** Pairs to the watch via a WebSocket.in peer to peer channel */
+    private fun pairWatchWithWS(peerID : String) {
+
+        // Setup channel
+        val rpc = PubSub("chronobuddy-sync", peerID)
+
+        // Call pair
+        val response = rpc.call("pair", mapOf(
+            "deviceName" to "Android Device"
+        )).get()
+
+        // Success!
 
     }
 

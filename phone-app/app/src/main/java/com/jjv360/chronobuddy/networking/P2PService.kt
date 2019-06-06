@@ -5,11 +5,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import com.jjv360.chronobuddy.ui.MainActivity
-import com.jjv360.ipfs.IPFS
-import com.jjv360.shared.R
 import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
-import java.util.logging.Logger
 
 class P2PService : Service() {
 
@@ -26,7 +23,7 @@ class P2PService : Service() {
     }
 
     /** The IPFS instance */
-    var ipfs = IPFS(this)
+//    var ipfs = IPFS(this)
 
     /** Called when someone tried to bind our service */
     override fun onBind(intent: Intent?): IBinder? {
@@ -57,7 +54,7 @@ class P2PService : Service() {
         task {
 
             // Start IPFS
-            ipfs.start()
+//            ipfs.start()
 
             // Done, inform anyone who's waiting for us to finish loading
             startupPromise.resolve(this)

@@ -16,15 +16,18 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 
 Feature                                 | Support
 ----------------------------------------|--------------
-**Phone to Watch connection**           | ❌
+**Peer to peer connection**             |
 Connect via Bluetooth LE                | ❌
-Connect via IPFS (WiFi and Internet)    | ⏳ In progress
-- Encrypted communication               | ❌
-**Notifications**                       | ❌
-Receive notifications                   | ⏳ In progress
+Connect via PubSub (websocket.in)       | ⏳ In progress
+Connect via IPFS                        | ❌
+Encrypted communication                 | ❌
+:                                       |
+**Notifications**                       | 
+Receive notifications                   | ❌
 Send actions from notifications         | ❌
+:                                       |
 **Watch Faces**                         | ❌
-Display watch faces                     | ❌
+Display watch faces                     | ⏳ In progress
 Install faces from the phone app        | ❌
 Watch face file format                  | ❌
 

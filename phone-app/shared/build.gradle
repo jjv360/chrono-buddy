@@ -41,7 +41,15 @@ dependencies {
     // Promise support
     implementation 'nl.komponents.kovenant:kovenant:3.3.0'
     implementation 'nl.komponents.kovenant:kovenant-android:3.3.0'
+
+    // IPFS support
     implementation project(path: ':ipfs')
+
+    // WebSocket support
+    api 'com.squareup.okhttp3:okhttp:3.12.1'
+
+    // JSON support
+    implementation 'com.github.salomonbrys.kotson:kotson:2.5.0'
 
 }
 repositories {
