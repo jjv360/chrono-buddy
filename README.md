@@ -30,6 +30,10 @@ Send actions from notifications         | ❌
 Display watch faces                     | ⏳ In progress
 Install faces from the phone app        | ❌
 Watch face file format                  | ❌
+:                                       |
+**Phone app**                           |
+Pair with watch                         | ⏳ In progress
+Display watch battery level             | ⏳ In progress
 
 ## Supported Devices
 

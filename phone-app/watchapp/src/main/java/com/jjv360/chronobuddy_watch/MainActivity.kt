@@ -14,6 +14,7 @@ import com.github.sumimakito.awesomeqr.AwesomeQrRenderer
 import com.github.sumimakito.awesomeqr.option.RenderOption
 import com.github.sumimakito.awesomeqr.option.color.Color
 import com.google.gson.Gson
+import com.jjv360.chronobuddy_watch.faces.Digital1
 import com.jjv360.chronobuddy_watch.networking.P2PService
 import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
@@ -48,6 +49,7 @@ class MainActivity : Activity() {
 //            if (P2PService.companions.isEmpty())
             promiseOnUi {
                 setContentView(R.layout.activity_main_pair)
+//                showFace()
             }
 
             // Register pair handler
@@ -57,7 +59,7 @@ class MainActivity : Activity() {
 
                 // Show the watch face again
                 promiseOnUi {
-                    setContentView(R.layout.activity_main_pair)
+                    showFace()
                 }
 
                 // Done
@@ -115,6 +117,17 @@ class MainActivity : Activity() {
 
         // Show pair screen again
         setContentView(R.layout.activity_main_pair)
+
+    }
+
+    /** Called when we want to replace the current UI with the user's selected watch face */
+    fun showFace() {
+
+        // Construct a new watch face view
+        val face = Digital1(this)
+
+        // Show it
+        setContentView(face)
 
     }
 
