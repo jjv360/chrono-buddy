@@ -14,49 +14,49 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 
 ## Features
 
-📱 | 🕒  | Data connection
----|-----|----------------------
-❌ | ❌ | Connect via Bluetooth LE
-⚠️ | ⚠️ | Connect via websocket.in _(unencrypted)_
-❌ | ❌ | Connect via IPFS
+🌎 | Data connection
+----|----------------------
+❌ | Connect via Bluetooth LE
+⚠️ | Connect via websocket.in _(unencrypted)_
+❌ | Connect via IPFS
 
-📱 | 🕒  | Notifications
----|-----|---------------------
-🔨 | 🔨 | Show notifications from phone
-🔨 | 🔨 | Trigger notification actions
-❌ | ❌ | Sync Do Not Disturb mode
-❌ | ❌ | Show pictures
-❌ | ❌ | Show ongoing tasks 
+💬 | Notifications
+---|---------------------
+✔️ | Show notifications from phone
+🔨 | Trigger notification actions
+❌ | Sync Do Not Disturb mode
+❌ | Show pictures
+❌ | Show ongoing tasks 
 
-📱 | 🕒  | Watch UI
----|-----|---------------------
-❌ | ❌ | Swipe down for notification history
-❌ | ❌ | Swipe up for screens
-❌ | ❌ | Screen: Music control
-❌ | ❌ | Screen: Status, connectivity and shortcuts
-❌ | ❌ | Screen: Weather
-❌ | ❌ | Custom screens
+☝️ | Watch UI
+---|---------------------
+❌ | Swipe down for notification history
+❌ | Swipe up for screens
+❌ | Screen: Music control
+❌ | Screen: Status, connectivity and shortcuts
+❌ | Screen: Weather
+❌ | Custom screens
 
-📱 | 🕒  | Watch faces
----|-----|---------------------
-🔨 | 🔨 | Display custom watch faces
-❌ | ❌ | Select watch face from phone
-❌ | ❌ | Watch face file format
-❌ | ❌ | In-app watch face designer
+⌚ | Watch faces
+---|---------------------
+🔨 | Display custom watch faces
+❌ | Select watch face from phone
+❌ | Watch face file format
+❌ | In-app watch face designer
 
-📱 | 🕒  | Watch widgets
----|-----|---------------------
-❌ | ❌ | Widgets in watch face
-❌ | ❌ | Music widget
-❌ | ❌ | Weather widget
-❌ | ❌ | Heart rate widget
-❌ | ❌ | Calendar widget
+🔌 | Watch widgets
+---|---------------------
+❌ | Widgets in watch face
+❌ | Music widget
+❌ | Weather widget
+❌ | Heart rate widget
+❌ | Calendar widget
 
-📱 | 🕒  | Watch information
----|-----|---------------------
-✔️ | ✔️ | Pair with watch
-🔨 | ✔️ | Display watch battery level on phone
-❌ | ❌ | Manage running apps on watch
+ℹ️ | Watch information
+---|---------------------
+✔️ | Pair with watch
+🔨 | Display watch battery level on phone
+❌ | Manage running apps on watch
 
 ## Supported Devices
 
