@@ -4,10 +4,7 @@ import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.get
 import com.google.gson.Gson
 import com.google.gson.JsonElement
-import nl.komponents.kovenant.Deferred
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.deferred
-import nl.komponents.kovenant.task
+import nl.komponents.kovenant.*
 import okhttp3.*
 import java.util.*
 import java.util.logging.Logger
@@ -25,7 +22,7 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
     var connected = false
 
     /** The websocket */
-    var websocket : WebSocket
+    var websocket : WebSocket? = null
 
     /** Pending responses */
     var pending = mutableMapOf<String, Deferred<JsonElement, Exception>>()
@@ -42,6 +39,16 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
     /** Setup web socket */
     init {
 
+        // Open connection
+        connect()
+
+    }
+
+    private fun connect() {
+
+        // Stop if already connected
+        if (websocket != null)
+            return
 
         // Open socket
         // TODO: Use secure URL - some certificate issue
@@ -62,7 +69,7 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
 
         // Send existing items in our queue
         sendQueue.forEach {
-            websocket.send(it)
+            webSocket.send(it)
         }
 
         // Clear queue
@@ -79,10 +86,21 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
         super.onClosed(webSocket, code, reason)
 
         // Mark closed
-        Logger.getLogger("PubSub").info("WebSocket was closed")
+        Logger.getLogger("PubSub").warning("WebSocket was closed, retrying connection in 5 seconds...")
+        websocket = null
         connected = false
 
-        // TODO: Retry?
+        // Attempt reconnect
+        // TODO: Exponential backoff
+        task {
+
+            // Wait a little
+            Thread.sleep(5000)
+
+            // Try connect again
+            connect()
+
+        }
 
     }
 
@@ -111,11 +129,11 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
     private fun send(txt : String) {
 
         // Check if websocket is connected
-        if (connected) {
+        if (connected && websocket != null) {
 
             // Send immediately
             Logger.getLogger("PubSub").info("Sending payload $txt")
-            websocket.send(txt)
+            websocket?.send(txt)
 
         } else {
 

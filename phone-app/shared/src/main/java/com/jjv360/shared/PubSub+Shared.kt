@@ -16,6 +16,6 @@ fun PubSub.Companion.open(channel : String, deviceID : String) : PubSub {
     activePubSubs["$channel:$deviceID"] = pubsub
     return pubsub
 
-    // TODO: Shut these down if the service closes
+    // TODO: Shut these down if the service closes, or after a while of no use if no RPCs registered
 
 }

@@ -2,6 +2,7 @@ package com.jjv360.chronobuddy_watch
 
 import android.app.Activity
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
@@ -43,29 +44,35 @@ class MainActivity : Activity() {
         super.onResume()
 
         // Wait for service to start
-        P2PService.whenReady then {
+        P2PService.whenReady successUi {
 
             // Check if should show the Pair screen or the main screen
-//            if (P2PService.companions.isEmpty())
-            promiseOnUi {
+            val prefs = getPreferences(Context.MODE_PRIVATE)
+            val hasPaired = prefs.getBoolean("has-paired", false)
+            if (hasPaired)
+                showFace()
+            else
                 setContentView(R.layout.activity_main_pair)
-//                showFace()
-            }
 
             // Register pair handler
-            it.rpc?.register("pair") {
+            it.rpc?.register("pair") { promiseOnUi {
 
                 // TODO: Confirm with the user
 
-                // Show the watch face again
-                promiseOnUi {
-                    showFace()
+                // Update preferences
+                val prefs = getPreferences(Context.MODE_PRIVATE)
+                with (prefs.edit()) {
+                    putBoolean("has-paired", true)
+                    apply()
                 }
 
-                // Done
-                Promise.of(true)
+                // Show the watch face
+                showFace()
 
-            }
+                // Done
+                true
+
+            }}
 
         }
 

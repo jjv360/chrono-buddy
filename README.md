@@ -14,7 +14,7 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 
 ## Features
 
-📱 | ⌚  | Peer to peer connection
+📱 | ⌚  | Data connection
 ---|-----|----------------------
 ❌ | ❌ | Connect via Bluetooth LE
 🔨 | 🔨 | Connect via PubSub (websocket.in)
@@ -25,6 +25,15 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 ❌ | ❌ | Show notifications from phone
 ❌ | ❌ | Trigger notification actions
 
+📱 | ⌚  | Watch UI
+---|-----|---------------------
+❌ | ❌ | Swipe down for notification history
+❌ | ❌ | Swipe up for screens
+❌ | ❌ | Screen: Music control
+❌ | ❌ | Screen: Status, connectivity and shortcuts
+❌ | ❌ | Screen: Weather
+❌ | ❌ | Custom screens
+
 📱 | ⌚  | Watch faces
 ---|-----|---------------------
 🔨 | 🔨 | Display custom watch faces
@@ -32,9 +41,17 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 ❌ | ❌ | Watch face file format
 ❌ | ❌ | In-app watch face designer
 
+📱 | ⌚  | Watch widgets
+---|-----|---------------------
+❌ | ❌ | Widgets in watch face
+❌ | ❌ | Music widget
+❌ | ❌ | Weather widget
+❌ | ❌ | Heart rate widget
+❌ | ❌ | Calendar widget
+
 📱 | ⌚  | Watch information
 ---|-----|---------------------
-🔨 | 🔨 | Pair with watch
+✔️ | ✔️ | Pair with watch
 🔨 | ✔️ | Display watch battery level on phone
 ❌ | ❌ | Manage running apps on watch
 

@@ -127,7 +127,6 @@ class MainActivity : AppCompatActivity() {
 
         // Show progress dialog
         val dlg = ProgressDialog(this)
-        dlg.setTitle("Pairing watch")
         dlg.setMessage("Connecting to device...")
         dlg.setCancelable(false)
         dlg.show()
@@ -145,9 +144,6 @@ class MainActivity : AppCompatActivity() {
                 // Extract peer ID
                 val peerID = json["id"] ?: throw Exception("No peer ID found in the pair request.")
 
-                // Connect to the remote device
-                promiseOnUi { dlg.setMessage("Connecting via IPFS...") }
-
                 // Pair with IPFS service
                 pairWatchWithIPFS(peerID)
 
@@ -155,9 +151,6 @@ class MainActivity : AppCompatActivity() {
 
                 // Extract peer ID
                 val peerID = json["id"] ?: throw Exception("No peer ID found in the pair request.")
-
-                // Connect to the remote device
-                promiseOnUi { dlg.setMessage("Connecting via WebSocket...") }
 
                 // Pair with IPFS service
                 pairWatchWithWS(peerID)
@@ -222,16 +215,26 @@ class MainActivity : AppCompatActivity() {
         // Save pairing
         watchID = peerID
 
-        // Success! Refresh device info
+        // Move to UI thread
         promiseOnUi {
+
+            // Pairing complete! Refresh device info
             setContentView(R.layout.activity_main_deviceinfo)
             refreshDeviceInfo()
+
+            // Update preferences
+            val prefs = getSharedPreferences("secret", Context.MODE_PRIVATE)
+            with (prefs.edit()) {
+                putString("watch-id", watchID)
+                apply()
+            }
+
         }
 
     }
 
     /** Fetch device information from the watch */
-    fun refreshDeviceInfo() {
+    private fun refreshDeviceInfo() {
 
         // Stop if no watch
         if (watchID.isBlank())
