@@ -17,7 +17,7 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 📱 | 🕒  | Data connection
 ---|-----|----------------------
 ❌ | ❌ | Connect via Bluetooth LE
-🔨 | 🔨 | Connect via PubSub (websocket.in)
+⚠️ | ⚠️ | Connect via websocket.in _(unencrypted)_
 ❌ | ❌ | Connect via IPFS
 
 📱 | 🕒  | Notifications
