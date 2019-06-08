@@ -24,6 +24,9 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 ---|-----|---------------------
 ❌ | ❌ | Show notifications from phone
 ❌ | ❌ | Trigger notification actions
+❌ | ❌ | Sync Do Not Disturb mode
+❌ | ❌ | Show pictures
+❌ | ❌ | Show ongoing tasks 
 
 📱 | 🕒  | Watch UI
 ---|-----|---------------------

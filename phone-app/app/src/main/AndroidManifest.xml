@@ -25,7 +25,21 @@
         android:usesCleartextTraffic="true">
 
         <!-- Networking service -->
-        <service android:name=".networking.P2PService" android:enabled="true" android:exported="false" />
+        <service
+            android:name=".networking.P2PService"
+            android:label="Watch sync"
+            android:enabled="true"
+            android:exported="false" />
+
+        <!-- Notification manager service, handles interacting with the user's notifications -->
+        <service
+            android:name=".notifications.NotificationReceiverService"
+            android:label="Forward notifications to watch"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
 
         <!-- App main/start screen -->
         <activity android:name=".ui.MainActivity" android:resizeableActivity="true">

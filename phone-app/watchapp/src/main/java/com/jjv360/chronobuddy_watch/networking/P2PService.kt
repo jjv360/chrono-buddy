@@ -147,17 +147,13 @@ class P2PService : Service() {
 
         }
 
-        // Add a notification endpoint
-        rpc?.register("set-notifications") {
-
-            // Get notifications
-            val msgs = it.obj["notifications"].nullArray ?: JsonArray()
-            if (msgs.size() == 0)
-                return@register Promise.of(true)
+        // Add a notification endpoint. This is called by the phone app to give us the latest list of notifications
+        rpc?.register("notifications") {
 
             // Show notification activity
+            // TODO: Don't encode back into JSON here
             val intent = Intent(this, NotificationFullscreenActivity::class.java)
-            intent.putExtra("notifications", Gson().toJson(msgs))
+            intent.putExtra("notifications", Gson().toJson(it))
             startActivity(intent)
 
             // Done

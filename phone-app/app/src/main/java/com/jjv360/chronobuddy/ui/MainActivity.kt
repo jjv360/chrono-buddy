@@ -1,7 +1,6 @@
 package com.jjv360.chronobuddy.ui
 
-import android.app.AlertDialog
-import android.app.ProgressDialog
+import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -267,53 +266,30 @@ class MainActivity : AppCompatActivity() {
     /** Called when the user presses the Send Test Notification button */
     fun sendTestNotification(view : View) {
 
-        // Show progress dialog
-        val dlg = ProgressDialog(this)
-        dlg.setMessage("Sending notification...")
-        dlg.setCancelable(false)
-        dlg.show()
+        // Check which version of the notification to use
+        val notificationManager = getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-        // Setup payload
-        val payload = mapOf(
-            "notifications" to arrayOf(
-                mapOf(
-                    "id" to "test",
-                    "title" to "Test Notification",
-                    "content" to "This is a test notification. If you're seeing this, your watch is paired to your phone successfully.",
-                    "source" to applicationInfo.packageName,
-                    "actions" to arrayOf(
-                        mapOf(
-                            "id" to "dismiss",
-                            "title" to "Dismiss"
-                        ),
-                        mapOf(
-                            "id" to "reply",
-                            "title" to "Reply",
-                            "type" to "text-reply"
-                        )
-                    )
-                )
-            )
-        )
-
-        // Send it
-        PubSub.open("chronobuddy-sync", watchID).call("set-notifications", payload) successUi {
-
-            // Done
-            dlg.dismiss()
-
-        } failUi {
-
-            // Failed! Show alert
-            dlg.dismiss()
-            AlertDialog.Builder(this)
-                .setTitle("Unable to send notification")
-                .setMessage(it.localizedMessage)
-                .setNeutralButton("Close", null)
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .show()
+            // Create notification channel
+            val channel = NotificationChannel("test-channel", "Test Notifications", NotificationManager.IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(channel)
 
         }
+
+        // Create builder
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(this, "test-channel")
+        } else {
+            Notification.Builder(this)
+        }
+
+        // Get notification manager
+        notificationManager.notify(100, builder
+            .setContentIntent(PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0))
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("Test Notification")
+            .setContentText("If you can see this message on your watch, then everything is working.")
+            .build())
 
     }
 

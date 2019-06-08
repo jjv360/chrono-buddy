@@ -69,6 +69,7 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
 
         // Send existing items in our queue
         sendQueue.forEach {
+            Logger.getLogger("PubSub").info("Sending payload $it")
             webSocket.send(it)
         }
 
