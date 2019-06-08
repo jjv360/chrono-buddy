@@ -14,29 +14,29 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 
 ## Features
 
-🌎  | Peer to peer connection
----|---------------------------
-❌ | Connect via Bluetooth LE
-🔨 | Connect via PubSub (websocket.in)
-❌ | Connect via IPFS
+📱 | ⌚  | Peer to peer connection
+---|-----|----------------------
+❌ | ❌ | Connect via Bluetooth LE
+🔨 | 🔨 | Connect via PubSub (websocket.in)
+❌ | ❌ | Connect via IPFS
 
-💬 | Notifications
----|---------------------------
-❌ | Show notifications from phone
-❌ | Trigger notification actions
+📱 | ⌚  | Notifications
+---|-----|---------------------
+❌ | ❌ | Show notifications from phone
+❌ | ❌ | Trigger notification actions
 
-🕰️ | Watch faces
----|---------------------------
-🔨 | Display custom watch faces
-❌ | Select watch face from phone
-❌ | Watch face file format
-❌ | In-app watch face designer
+📱 | ⌚  | Watch faces
+---|-----|---------------------
+🔨 | 🔨 | Display custom watch faces
+❌ | ❌ | Select watch face from phone
+❌ | ❌ | Watch face file format
+❌ | ❌ | In-app watch face designer
 
-⌚ | Watch information
----|---------------------------
-🔨 | Pair with watch
-🔨 | Display watch battery level on phone
-❌ | Manage running apps on watch
+📱 | ⌚  | Watch information
+---|-----|---------------------
+🔨 | 🔨 | Pair with watch
+🔨 | ✔️ | Display watch battery level on phone
+❌ | ❌ | Manage running apps on watch
 
 ## Supported Devices
 
@@ -44,7 +44,7 @@ Device                          | Support
 --------------------------------|---------------
 Amazfit Pace                    | ❌
 Pebble (Original)               | ❌
-Zeblaze (Alps) THOR 4           | ⚠️ Unstable
+Zeblaze (Alps) THOR 4           | ✔️
 
 ## Credits
 
