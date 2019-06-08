@@ -3,10 +3,16 @@ package com.jjv360.chronobuddy.notifications
 import android.app.Notification.*
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.drawable.BitmapDrawable
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
+import android.util.Base64
 import com.jjv360.shared.PubSub
 import com.jjv360.shared.open
+import java.io.ByteArrayOutputStream
 import java.util.logging.Logger
 
 class NotificationReceiverService : NotificationListenerService() {
@@ -77,9 +83,38 @@ class NotificationReceiverService : NotificationListenerService() {
                 // Get app info
                 val appInfo = packageManager.getApplicationInfo(notification.packageName, PackageManager.GET_UNINSTALLED_PACKAGES) ?: continue
 
+                // Get app icon as a bitmap
+                val desiredSize = 64
+                val drawable = packageManager.getApplicationIcon(appInfo)
+                val bitmap = if (drawable is BitmapDrawable && drawable.intrinsicWidth <= desiredSize && drawable.intrinsicHeight <= desiredSize) {
+
+                    // Drawable is a bitmap already, and is already small enough, just extract it
+                    drawable.bitmap
+
+                } else {
+
+                    // Create bitmap and draw drawable into it
+                    val bmp = Bitmap.createBitmap(desiredSize, desiredSize, Bitmap.Config.ARGB_8888)
+                    val canvas = Canvas(bmp)
+                    drawable.setBounds(0, 0, canvas.width, canvas.height)
+                    drawable.draw(canvas)
+
+                    // Done
+                    bmp
+
+                }
+
+
+                // Convert icon bitmap to PNG data
+                val stream = ByteArrayOutputStream()
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                val iconStr = Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
+                Logger.getLogger("notificationSvc").info("Encoded app icon for ${notification.packageName}, file size is ${iconStr.length / 1024} KB")
+
                 // Get package
                 apps[notification.packageName] = mapOf(
-                    "label" to packageManager.getApplicationLabel(appInfo)
+                    "label" to packageManager.getApplicationLabel(appInfo),
+                    "icon" to iconStr
                 )
 
             }
