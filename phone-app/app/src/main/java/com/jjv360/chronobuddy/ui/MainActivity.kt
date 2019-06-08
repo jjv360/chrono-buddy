@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import com.github.salomonbrys.kotson.fromJson
 import com.github.salomonbrys.kotson.nullDouble
@@ -172,7 +173,7 @@ class MainActivity : AppCompatActivity() {
             // Failed! Show alert
             dlg.dismiss()
             AlertDialog.Builder(this)
-                .setTitle("Unable to Pair")
+                .setTitle("Unable to pair")
                 .setMessage(it.localizedMessage)
                 .setNeutralButton("Close", null)
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -258,6 +259,59 @@ class MainActivity : AppCompatActivity() {
             // Notify user it failed
             findViewById<TextView>(R.id.view_deviceinfo1)?.text = "Unable to connect to watch"
             findViewById<TextView>(R.id.view_deviceinfo2)?.text = it.localizedMessage
+
+        }
+
+    }
+
+    /** Called when the user presses the Send Test Notification button */
+    fun sendTestNotification(view : View) {
+
+        // Show progress dialog
+        val dlg = ProgressDialog(this)
+        dlg.setMessage("Sending notification...")
+        dlg.setCancelable(false)
+        dlg.show()
+
+        // Setup payload
+        val payload = mapOf(
+            "notifications" to arrayOf(
+                mapOf(
+                    "id" to "test",
+                    "title" to "Test Notification",
+                    "content" to "This is a test notification. If you're seeing this, your watch is paired to your phone successfully.",
+                    "source" to applicationInfo.packageName,
+                    "actions" to arrayOf(
+                        mapOf(
+                            "id" to "dismiss",
+                            "title" to "Dismiss"
+                        ),
+                        mapOf(
+                            "id" to "reply",
+                            "title" to "Reply",
+                            "type" to "text-reply"
+                        )
+                    )
+                )
+            )
+        )
+
+        // Send it
+        PubSub.open("chronobuddy-sync", watchID).call("set-notifications", payload) successUi {
+
+            // Done
+            dlg.dismiss()
+
+        } failUi {
+
+            // Failed! Show alert
+            dlg.dismiss()
+            AlertDialog.Builder(this)
+                .setTitle("Unable to send notification")
+                .setMessage(it.localizedMessage)
+                .setNeutralButton("Close", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show()
 
         }
 

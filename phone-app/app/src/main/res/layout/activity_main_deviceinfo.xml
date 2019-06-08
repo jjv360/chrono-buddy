@@ -12,7 +12,8 @@
         <ImageView
             android:id="@+id/imageView2"
             android:layout_width="match_parent"
-            android:layout_height="148dp"
+            android:layout_height="200dp"
+            android:paddingTop="40dp"
             app:srcCompat="@drawable/ic_wristwatch" />
 
         <TextView
@@ -35,5 +36,23 @@
             android:layout_marginEnd="8dp"
             android:text="Please wait..."
             android:textAlignment="center" />
+
+        <TextView
+            android:id="@+id/textView11"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="8dp"
+            android:paddingTop="40dp"
+            android:text="Debug" />
+
+        <Button
+            android:id="@+id/button6"
+            style="@android:style/Widget.Material.Button.Borderless"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="sendTestNotification"
+            android:text="Send test notification"
+            android:textAlignment="viewStart" />
+
     </LinearLayout>
 </ScrollView>
