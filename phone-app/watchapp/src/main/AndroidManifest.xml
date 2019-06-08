@@ -17,7 +17,7 @@
         <service android:name=".networking.P2PService" android:enabled="true" android:exported="false" />
 
         <!-- Main watch screen interface -->
-        <activity android:name=".MainActivity" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+        <activity android:name=".MainActivity" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:immersive="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <action android:name="android.intent.action.VIEW"/>
@@ -25,6 +25,15 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <!-- Displays fullscreen notifications -->
+        <activity
+            android:name=".NotificationFullscreenActivity"
+            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="true"
+            android:immersive="true"
+            android:launchMode="singleInstance" />
 
     </application>
 

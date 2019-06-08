@@ -6,7 +6,12 @@ import android.content.Intent
 import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
+import com.github.salomonbrys.kotson.nullArray
+import com.github.salomonbrys.kotson.obj
+import com.google.gson.Gson
+import com.google.gson.JsonArray
 import com.jjv360.chronobuddy_watch.MainActivity
+import com.jjv360.chronobuddy_watch.NotificationFullscreenActivity
 import com.jjv360.chronobuddy_watch.R
 import com.jjv360.shared.PubSub
 import nl.komponents.kovenant.Promise
@@ -86,32 +91,6 @@ class P2PService : Service() {
         // Done, inform anyone who's waiting for us to finish loading
         startupPromise.resolve(this)
 
-        // Add a state endpoint
-        rpc?.register("state") {
-
-            // Get battery state
-            val battery = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
-            var batteryState = "unknown"
-            if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_CHARGING)
-                batteryState = "charging"
-            else if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_DISCHARGING)
-                batteryState = "discharging"
-            else if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_FULL)
-                batteryState = "full"
-            else if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_NOT_CHARGING)
-                batteryState = "not_charging"
-
-            // Get battery level
-            val batteryLevel = battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY).toDouble() / 100
-
-            // Return various information about the device
-            Promise.of(mapOf(
-                "batteryState" to batteryState,
-                "batteryLevel" to batteryLevel
-            ))
-
-        }
-
         // Check which version of the notification to use
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -141,6 +120,50 @@ class P2PService : Service() {
             .setContentTitle("Connected to phone")
             .setContentText("Notifications are being received from your phone.")
             .build())
+
+        // Add a state endpoint
+        rpc?.register("state") {
+
+            // Get battery state
+            val battery = getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            var batteryState = "unknown"
+            if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_CHARGING)
+                batteryState = "charging"
+            else if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_DISCHARGING)
+                batteryState = "discharging"
+            else if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_FULL)
+                batteryState = "full"
+            else if (battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS) == BatteryManager.BATTERY_STATUS_NOT_CHARGING)
+                batteryState = "not_charging"
+
+            // Get battery level
+            val batteryLevel = battery.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY).toDouble() / 100
+
+            // Return various information about the device
+            Promise.of(mapOf(
+                "batteryState" to batteryState,
+                "batteryLevel" to batteryLevel
+            ))
+
+        }
+
+        // Add a notification endpoint
+        rpc?.register("set-notifications") {
+
+            // Get notifications
+            val msgs = it.obj["notifications"].nullArray ?: JsonArray()
+            if (msgs.size() == 0)
+                return@register Promise.of(true)
+
+            // Show notification activity
+            val intent = Intent(this, NotificationFullscreenActivity::class.java)
+            intent.putExtra("notifications", Gson().toJson(msgs))
+            startActivity(intent)
+
+            // Done
+            Promise.of(true)
+
+        }
 
     }
 
