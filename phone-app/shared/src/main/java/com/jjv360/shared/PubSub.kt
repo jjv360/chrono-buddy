@@ -18,6 +18,9 @@ import java.util.logging.Logger
  */
 class PubSub(val channel : String, val room : String) : WebSocketListener() {
 
+    /** Statics */
+    companion object {}
+
     /** True if connected to the websocket */
     var connected = false
 
@@ -125,7 +128,7 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
     }
 
     /** Send a request along the websocket */
-    fun call(action : String, data : Any) : Promise<JsonElement, Exception> {
+    fun call(action : String, data : Any = "") : Promise<JsonElement, Exception> {
 
         // Create request ID
         val id = UUID.randomUUID().toString()

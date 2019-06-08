@@ -1,38 +1,58 @@
 package com.jjv360.chronobuddy.ui
 
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.app.ProgressDialog
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.nullDouble
+import com.github.salomonbrys.kotson.nullObj
+import com.github.salomonbrys.kotson.obj
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.ivan200.photobarcodelib.PhotoBarcodeScannerBuilder
 import com.jjv360.chronobuddy.R
 import com.jjv360.chronobuddy.networking.P2PService
 import com.jjv360.shared.PubSub
-import khttp.post
-import nl.komponents.kovenant.Promise
-import nl.komponents.kovenant.task
+import com.jjv360.shared.open
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.failUi
 import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
-import java.net.HttpURLConnection
-import java.net.URL
 import java.util.logging.Logger
 
 
 class MainActivity : AppCompatActivity() {
 
+    /** Paired device info */
+    var watchID = ""
+
+    /** Called by Android on activity create */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        // Check if we have a paired device
+        val prefs = getSharedPreferences("secret", Context.MODE_PRIVATE)
+        watchID = prefs.getString("watch-id", null) ?: ""
+        if (watchID.isBlank()) {
+
+            // No device paired
+            setContentView(R.layout.activity_main_nodevice)
+
+        } else {
+
+            // Device found!
+            setContentView(R.layout.activity_main_deviceinfo)
+
+            // Fetch device info
+            refreshDeviceInfo()
+
+        }
 
         // Start our P2P service
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -60,6 +80,14 @@ class MainActivity : AppCompatActivity() {
 
         // Unknown menu item, let system deal with it
         return super.onOptionsItemSelected(item)
+
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Refresh UI
+        refreshDeviceInfo()
 
     }
 
@@ -186,15 +214,49 @@ class MainActivity : AppCompatActivity() {
     /** Pairs to the watch via a WebSocket.in peer to peer channel */
     private fun pairWatchWithWS(peerID : String) {
 
-        // Setup channel
-        val rpc = PubSub("chronobuddy-sync", peerID)
-
-        // Call pair
-        val response = rpc.call("pair", mapOf(
+        // Call pair function
+        val response = PubSub.open("chronobuddy-sync", peerID).call("pair", mapOf(
             "deviceName" to "Android Device"
         )).get()
 
-        // Success!
+        // Save pairing
+        watchID = peerID
+
+        // Success! Refresh device info
+        promiseOnUi {
+            setContentView(R.layout.activity_main_deviceinfo)
+            refreshDeviceInfo()
+        }
+
+    }
+
+    /** Fetch device information from the watch */
+    fun refreshDeviceInfo() {
+
+        // Stop if no watch
+        if (watchID.isBlank())
+            return
+
+        // Start fetching
+        findViewById<TextView>(R.id.view_deviceinfo1)?.text = "Connecting..."
+
+        // Send request
+        PubSub.open("chronobuddy-sync", watchID).call("state") successUi {
+
+            // Fetch battery reading
+            val battery = it.obj["batteryLevel"].nullDouble ?: 0.0
+
+            // Update UI
+            findViewById<TextView>(R.id.view_deviceinfo1)?.text = "Watch connected"
+            findViewById<TextView>(R.id.view_deviceinfo2)?.text = "Battery ${(battery * 100).toInt()}%"
+
+        } failUi {
+
+            // Notify user it failed
+            findViewById<TextView>(R.id.view_deviceinfo1)?.text = "Unable to connect to watch"
+            findViewById<TextView>(R.id.view_deviceinfo2)?.text = it.localizedMessage
+
+        }
 
     }
 

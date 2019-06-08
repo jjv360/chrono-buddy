@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.IBinder
 import com.jjv360.chronobuddy.ui.MainActivity
+import com.jjv360.shared.PubSub
 import nl.komponents.kovenant.deferred
 import nl.komponents.kovenant.task
 
