@@ -1,11 +1,19 @@
 package com.jjv360.chronobuddy_watch
 
 import android.app.Activity
+import android.app.KeyguardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.RingtoneManager
+import android.os.Build
 import android.os.Bundle
+import android.os.VibrationEffect
+import android.os.Vibrator
 import android.util.Base64
+import android.view.WindowManager
+import android.view.WindowManager.LayoutParams.*
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.LinearLayout.VERTICAL
@@ -26,6 +34,12 @@ class NotificationFullscreenActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // If below API 26, request keyguard dismiss via a window flag
+        window.addFlags(FLAG_FULLSCREEN)
+        window.addFlags(FLAG_DISMISS_KEYGUARD)
+        window.addFlags(FLAG_SHOW_WHEN_LOCKED)
+        window.addFlags(FLAG_TURN_SCREEN_ON)
+
         // Update UI
         updateUI(intent)
 
@@ -42,10 +56,23 @@ class NotificationFullscreenActivity : Activity() {
     /** Load UI based on intent data */
     private fun updateUI(intent : Intent?) {
 
-        // Fetch notifications
-        // TODO: Show empty state
+        // Fetch notification payload
         val txt = intent?.getStringExtra("notifications") ?: return
         val json : JsonObject = Gson().fromJson(txt)
+
+        // Check if should alert
+        if (json["alert"].nullBool == true) {
+
+            // Play alert sound
+            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            val ring = RingtoneManager.getRingtone(this, uri)
+            ring.play()
+
+            // Quick vibrate
+            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator.vibrate(100)
+
+        }
 
         // Get app information
         val apps = json["apps"].nullObj ?: JsonObject()
@@ -53,7 +80,7 @@ class NotificationFullscreenActivity : Activity() {
         // Get notifications
         val notifications = json["notifications"].nullArray ?: return
         if (notifications.size() == 0)
-            return
+            return // TODO: Show empty state
 
         // Create scroll view
         val scroll = ScrollView(this)

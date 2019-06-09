@@ -3,10 +3,14 @@ package com.jjv360.chronobuddy_watch.networking
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_FROM_BACKGROUND
+import android.content.Intent.FLAG_RECEIVER_FOREGROUND
 import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
 import com.github.salomonbrys.kotson.nullArray
+import com.github.salomonbrys.kotson.nullBool
+import com.github.salomonbrys.kotson.nullObj
 import com.github.salomonbrys.kotson.obj
 import com.google.gson.Gson
 import com.google.gson.JsonArray
@@ -153,8 +157,14 @@ class P2PService : Service() {
             // Show notification activity
             // TODO: Don't encode back into JSON here
             val intent = Intent(this, NotificationFullscreenActivity::class.java)
+            intent.addFlags(FLAG_FROM_BACKGROUND)
             intent.putExtra("notifications", Gson().toJson(it))
             startActivity(intent)
+
+            // If there are new notifications, play an alert
+            if (it.obj["alert"]?.nullBool == true) {
+
+            }
 
             // Done
             Promise.of(true)

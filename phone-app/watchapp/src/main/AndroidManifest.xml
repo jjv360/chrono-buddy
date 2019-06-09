@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.jjv360.chronobuddy_watch">
 
+    <!-- Allow vibrating -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <!-- Main application -->
     <application
         android:name=".MyApplication"
@@ -33,7 +36,9 @@
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:immersive="true"
-            android:launchMode="singleInstance" />
+            android:launchMode="singleInstance"
+            android:noHistory="true"
+            android:showOnLockScreen="true" />
 
     </application>
 

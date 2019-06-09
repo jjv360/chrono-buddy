@@ -17,6 +17,9 @@ import java.util.logging.Logger
 
 class NotificationReceiverService : NotificationListenerService() {
 
+    // List of notifications we have already alerted
+    var currentIDs = listOf<String>()
+
     override fun onListenerConnected() {
         super.onListenerConnected()
 
@@ -53,6 +56,7 @@ class NotificationReceiverService : NotificationListenerService() {
         // Get current notifications
         val infos = mutableListOf<Any>()
         val apps = mutableMapOf<String, Any>()
+        var shouldNotify = false
         for (notification in activeNotifications) {
 
             // Skip unclearable notifications. These are typically long-running tasks, music player controls etc
@@ -72,6 +76,7 @@ class NotificationReceiverService : NotificationListenerService() {
             // Skip if this notification is blank
             if (title.isBlank() && text.isBlank()) {
                 Logger.getLogger("notificationSvc").warning("Skipped blank notification from ${notification.packageName}")
+                continue
             }
 
             // Add it
@@ -104,12 +109,10 @@ class NotificationReceiverService : NotificationListenerService() {
 
                 }
 
-
                 // Convert icon bitmap to PNG data
                 val stream = ByteArrayOutputStream()
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
                 val iconStr = Base64.encodeToString(stream.toByteArray(), Base64.DEFAULT)
-                Logger.getLogger("notificationSvc").info("Encoded app icon for ${notification.packageName}, file size is ${iconStr.length / 1024} KB")
 
                 // Get package
                 apps[notification.packageName] = mapOf(
@@ -119,13 +122,20 @@ class NotificationReceiverService : NotificationListenerService() {
 
             }
 
+            // Check if the watch should alert, if this is a new notification
+            if (!currentIDs.contains(notification.key))
+                shouldNotify = true
+
         }
 
+        // Store IDs
+        currentIDs = activeNotifications.map { it.key }
+
         // Send to watch
-        Logger.getLogger("notificationSvc").info("Sending ${infos.size} notifications to the watch.")
         PubSub.open("chronobuddy-sync", watchID).call("notifications", mapOf(
             "apps" to apps,
-            "notifications" to infos
+            "notifications" to infos,
+            "alert" to shouldNotify
         )) success {
             Logger.getLogger("notificationSvc").info("Watch has received our ${infos.size} notifications.")
         } fail {
