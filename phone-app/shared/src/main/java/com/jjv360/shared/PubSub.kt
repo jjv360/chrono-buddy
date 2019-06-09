@@ -108,7 +108,21 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
         super.onFailure(webSocket, t, response)
 
         // Failed!
-        Logger.getLogger("PubSub").warning("WebSocket failed: " + t.localizedMessage)
+        Logger.getLogger("PubSub").warning("WebSocket failed, retrying in 5 seconds: " + t.localizedMessage)
+        websocket = null
+        connected = false
+
+        // Attempt reconnect
+        // TODO: Exponential backoff
+        task {
+
+            // Wait a little
+            Thread.sleep(5000)
+
+            // Try connect again
+            connect()
+
+        }
 
     }
 
@@ -163,7 +177,16 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
             "from" to instanceID
         )))
 
-        // TODO: Timeout
+        // Timeout
+        task {
+
+            // Wait for timeout
+            Thread.sleep(6000)
+
+            // Cancel the pending promise if it exists
+            pending[id]?.reject(Exception("Request timed out, the remote device is probably not connected right now."))
+
+        }
 
         // Return promise
         return defer.promise
