@@ -65,4 +65,7 @@ dependencies {
     implementation "io.ktor:ktor-server-core:1.2.1"
     implementation "io.ktor:ktor-server-netty:1.2.1"
 
+    // Flexbox layout support
+    implementation 'com.google.android:flexbox:1.1.0'
+
 }

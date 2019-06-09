@@ -1,18 +1,15 @@
-package com.jjv360.chronobuddy_watch
+package com.jjv360.chronobuddy_watch.ui
 
 import android.app.Activity
-import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.RingtoneManager
-import android.os.Build
 import android.os.Bundle
-import android.os.VibrationEffect
 import android.os.Vibrator
 import android.util.Base64
-import android.view.WindowManager
+import android.view.MotionEvent.ACTION_UP
 import android.view.WindowManager.LayoutParams.*
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -21,9 +18,9 @@ import android.widget.ScrollView
 import android.widget.TextView
 import com.github.salomonbrys.kotson.*
 import com.google.gson.Gson
-import com.google.gson.JsonElement
+import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import java.io.ByteArrayInputStream
+import com.jjv360.chronobuddy_watch.R
 import java.util.logging.Logger
 
 class NotificationFullscreenActivity : Activity() {
@@ -101,8 +98,10 @@ class NotificationFullscreenActivity : Activity() {
             linear.addView(view)
 
             // Set fields
-            view.findViewById<TextView>(R.id.msgtitle).text = notification.obj["title"]?.nullString ?: "(no title)"
-            view.findViewById<TextView>(R.id.msgtext).text = notification.obj["text"]?.nullString ?: "(no text)"
+            val title = notification.obj["title"]?.nullString ?: "(no title)"
+            val text = notification.obj["text"]?.nullString ?: "(no text)"
+            view.findViewById<TextView>(R.id.msgtitle).text = title
+            view.findViewById<TextView>(R.id.msgtext).text = text
 
             // Set app info
             val appPackageID = notification.obj["source"]?.nullString ?: ""
@@ -113,6 +112,27 @@ class NotificationFullscreenActivity : Activity() {
             val bitmap = getAppIcon(appPackageID, app["icon"]?.nullString ?: "")
             if (bitmap != null)
                 view.findViewById<ImageView>(R.id.appicon).setImageBitmap(bitmap)
+
+            // Add click handler to the view
+            view.setOnTouchListener { _, event ->
+
+                // We only care about button press events
+                if (event.action != ACTION_UP)
+                    return@setOnTouchListener false
+
+                // Start intent to show actions
+                val actions = notification.obj["actions"]?.nullArray ?: JsonArray()
+                val intent = Intent(this, NotificationActionActivity::class.java)
+                intent.putExtra("id", notification.obj["id"]?.nullString ?: "(no id)")
+                intent.putExtra("title", title)
+                intent.putExtra("icon", bitmap)
+                intent.putExtra("actions", actions.map { it.obj["title"]?.nullString ?: "(untitled)" }.toTypedArray())
+                startActivity(intent)
+
+                // Done
+                true
+
+            }
 
         }
 

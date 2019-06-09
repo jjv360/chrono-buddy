@@ -1,27 +1,22 @@
-package com.jjv360.chronobuddy_watch
+package com.jjv360.chronobuddy_watch.ui
 
 import android.app.Activity
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.widget.ImageView
 import com.github.sumimakito.awesomeqr.AwesomeQrRenderer
 import com.github.sumimakito.awesomeqr.option.RenderOption
 import com.github.sumimakito.awesomeqr.option.color.Color
 import com.google.gson.Gson
+import com.jjv360.chronobuddy_watch.R
 import com.jjv360.chronobuddy_watch.faces.Digital1
 import com.jjv360.chronobuddy_watch.networking.P2PService
-import nl.komponents.kovenant.Promise
 import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
-import java.util.logging.Logger
 
 class MainActivity : Activity() {
 

@@ -232,6 +232,7 @@ class PubSub(val channel : String, val room : String) : WebSocketListener() {
             } fail {
 
                 // Send a fail response
+                Logger.getLogger("PubSub").warning("The RPC request ${json["name"].asString} has failed: ${it.localizedMessage}")
                 send(Gson().toJson(mapOf(
                     "response" to true,
                     "status" to "error",
