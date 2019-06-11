@@ -6,6 +6,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.RingtoneManager
+import android.os.Build
 import android.os.Bundle
 import android.os.Vibrator
 import android.util.Base64
@@ -25,17 +26,31 @@ import java.util.logging.Logger
 
 class NotificationFullscreenActivity : Activity() {
 
+    // Statics
+    companion object {
+
+        /** True if the activity is running */
+        var isRunning = false
+
+    }
+
     // Cache app icon bitmaps
     val bitmapCache = mutableMapOf<String, Bitmap>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // We are running now
+        isRunning = true
+
         // If below API 26, request keyguard dismiss via a window flag
         window.addFlags(FLAG_FULLSCREEN)
         window.addFlags(FLAG_DISMISS_KEYGUARD)
         window.addFlags(FLAG_SHOW_WHEN_LOCKED)
         window.addFlags(FLAG_TURN_SCREEN_ON)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+            setTurnScreenOn(true)
+        }
 
         // Update UI
         updateUI(intent)
@@ -50,26 +65,20 @@ class NotificationFullscreenActivity : Activity() {
 
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        // We are no longer running
+        isRunning = false
+
+    }
+
     /** Load UI based on intent data */
     private fun updateUI(intent : Intent?) {
 
         // Fetch notification payload
         val txt = intent?.getStringExtra("notifications") ?: return
         val json : JsonObject = Gson().fromJson(txt)
-
-        // Check if should alert
-        if (json["alert"].nullBool == true) {
-
-            // Play alert sound
-            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-            val ring = RingtoneManager.getRingtone(this, uri)
-            ring.play()
-
-            // Quick vibrate
-            val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vibrator.vibrate(100)
-
-        }
 
         // Get app information
         val apps = json["apps"].nullObj ?: JsonObject()

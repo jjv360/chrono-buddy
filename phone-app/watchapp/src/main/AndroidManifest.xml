@@ -5,6 +5,9 @@
     <!-- Allow vibrating -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Allow disabling the keyguard -->
+    <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+
     <!-- Main application -->
     <application
         android:name=".MyApplication"
@@ -13,14 +16,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
 
         <!-- Networking service -->
         <service android:name=".networking.P2PService" android:enabled="true" android:exported="false" />
 
         <!-- Main watch screen interface -->
-        <activity android:name=".ui.MainActivity" android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen" android:immersive="true">
+        <activity android:name=".ui.MainActivity" android:immersive="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <action android:name="android.intent.action.VIEW"/>
@@ -32,7 +34,6 @@
         <!-- Displays fullscreen notifications -->
         <activity
             android:name=".ui.NotificationFullscreenActivity"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:immersive="true"
@@ -42,7 +43,6 @@
         <!-- Displays the actions for a notification -->
         <activity
             android:name=".ui.NotificationActionActivity"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:excludeFromRecents="true"
             android:finishOnTaskLaunch="true"
             android:immersive="true"

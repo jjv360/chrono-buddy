@@ -4,9 +4,11 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_FROM_BACKGROUND
+import android.media.RingtoneManager
 import android.os.BatteryManager
 import android.os.Build
 import android.os.IBinder
+import android.os.Vibrator
 import com.github.salomonbrys.kotson.nullBool
 import com.github.salomonbrys.kotson.obj
 import com.google.gson.Gson
@@ -150,17 +152,36 @@ class P2PService : Service() {
         // Add a notification endpoint. This is called by the phone app to give us the latest list of notifications
         rpc?.register("notifications") {
 
+            // Check if should alert
+            if (it.obj["alert"].nullBool == true) {
+
+                // Attempt to wake the device
+//                val keyguard = getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+//                keyguard.exitKeyguardSecurely(null)
+
+                // Play alert sound
+                val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val ring = RingtoneManager.getRingtone(this, uri)
+                ring.play()
+
+                // Quick vibrate
+                val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                vibrator.vibrate(100)
+
+            } else {
+
+                // The incoming message is just an update, only present it if the notification UI is still onscreen
+                if (!NotificationFullscreenActivity.isRunning)
+                    return@register Promise.of(false)
+
+            }
+
             // Show notification activity
             // TODO: Don't encode back into JSON here
             val intent = Intent(this, NotificationFullscreenActivity::class.java)
             intent.addFlags(FLAG_FROM_BACKGROUND)
             intent.putExtra("notifications", Gson().toJson(it))
             startActivity(intent)
-
-            // If there are new notifications, play an alert
-            if (it.obj["alert"]?.nullBool == true) {
-
-            }
 
             // Done
             Promise.of(true)

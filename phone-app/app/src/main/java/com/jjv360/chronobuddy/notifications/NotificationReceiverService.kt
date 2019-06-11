@@ -1,6 +1,7 @@
 package com.jjv360.chronobuddy.notifications
 
 import android.app.Notification.*
+import android.app.NotificationChannel
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -8,9 +9,11 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import android.os.UserHandle
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Base64
+import com.github.salomonbrys.kotson.nullBool
 import com.github.salomonbrys.kotson.nullString
 import com.github.salomonbrys.kotson.obj
 import com.jjv360.chronobuddy.networking.P2PService
@@ -44,7 +47,7 @@ class NotificationReceiverService : NotificationListenerService() {
         super.onListenerConnected()
 
         // Forward to watch
-        updateState()
+        updateState(false)
 
         // Setup RPC listener
         isConnected = true
@@ -108,11 +111,45 @@ class NotificationReceiverService : NotificationListenerService() {
 
     }
 
+    override fun onNotificationChannelModified(pkg: String?, user: UserHandle?, channel: NotificationChannel?, modificationType: Int) {
+        super.onNotificationChannelModified(pkg, user, channel, modificationType)
+
+        System.out.println("Channel for ${pkg} modified ${modificationType}")
+
+    }
+
     override fun onNotificationPosted(sbn: StatusBarNotification?, rankingMap: RankingMap?) {
         super.onNotificationPosted(sbn, rankingMap)
 
+        // Stop if notification is invalid
+        if (sbn == null || sbn.notification == null)
+            return
+
+        // TODO: How the F do you find out if a notification has sound or not?
+
+        // Unclearable notifications should not alert
+        var alert = true
+        if (!sbn.isClearable)
+            alert = false
+
+        // Skip message groups
+        if (sbn.notification.flags and FLAG_GROUP_SUMMARY != 0)
+            alert = false
+
+        // Skip notifications only relevant to the current device
+        if (sbn.notification.flags and FLAG_LOCAL_ONLY != 0)
+            alert = false
+
+        // Skip notifications indicating a background service
+        if (sbn.notification.flags and FLAG_FOREGROUND_SERVICE != 0)
+            alert = false
+
+        // Skip alert for low priority notifications
+        if (sbn.notification.priority == PRIORITY_LOW)
+            alert = false
+
         // Forward to watch
-        updateState()
+        updateState(alert)
 
     }
 
@@ -120,12 +157,12 @@ class NotificationReceiverService : NotificationListenerService() {
         super.onNotificationRemoved(sbn, rankingMap, reason)
 
         // Forward to watch
-        updateState()
+        updateState(false)
 
     }
 
     /** Send the current notifications to the watch */
-    private fun updateState() {
+    private fun updateState(alert : Boolean) {
 
         // Get current watch ID
         val prefs = getSharedPreferences("secret", Context.MODE_PRIVATE)
@@ -136,8 +173,8 @@ class NotificationReceiverService : NotificationListenerService() {
         // Get current notifications
         val infos = mutableListOf<Any>()
         val apps = mutableMapOf<String, Any>()
-        var shouldNotify = false
-        val newIDs = mutableListOf<String>()
+//        var shouldNotify = false
+//        val newIDs = mutableListOf<String>()
         for (notification in activeNotifications) {
 
             // Skip unclearable notifications. These are typically long-running tasks, music player controls etc
@@ -146,6 +183,14 @@ class NotificationReceiverService : NotificationListenerService() {
 
             // Skip message groups
             if (notification.notification.flags and FLAG_GROUP_SUMMARY != 0)
+                continue
+
+            // Skip notifications only relevant to the current device
+            if (notification.notification.flags and FLAG_LOCAL_ONLY != 0)
+                continue
+
+            // Skip notifications indicating a background service
+            if (notification.notification.flags and FLAG_FOREGROUND_SERVICE != 0)
                 continue
 
             // Get list of actions
@@ -178,7 +223,7 @@ class NotificationReceiverService : NotificationListenerService() {
 
             // Add it
             infos.add(info)
-            newIDs.add(notification.key)
+//            newIDs.add(notification.key)
 
             // Get app info if needed
             if (apps.get(notification.packageName) == null) {
@@ -221,21 +266,21 @@ class NotificationReceiverService : NotificationListenerService() {
             }
 
             // Check if the watch should alert, if this is a new notification
-            if (!currentIDs.contains(notification.key))
-                shouldNotify = true
+//            if (!currentIDs.contains(notification.key))
+//                shouldNotify = true
 
         }
 
         // Store IDs
-        currentIDs = newIDs
+//        currentIDs = newIDs
 
         // Send to watch
         PubSub.open("chronobuddy-sync", watchID).call("notifications", mapOf(
             "apps" to apps,
             "notifications" to infos,
-            "alert" to shouldNotify
+            "alert" to alert
         )) success {
-            Logger.getLogger("notificationSvc").info("Watch has received our ${infos.size} notifications.")
+            Logger.getLogger("notificationSvc").info("Watch has received our ${infos.size} notifications. ${if (it.nullBool == true) "It presented them." else "It decided not to present the updated notifications."}")
         } fail {
             Logger.getLogger("notificationSvc").warning("Unable to send notifications to the watch. ${it.localizedMessage}")
         }
