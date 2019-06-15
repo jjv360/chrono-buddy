@@ -58,6 +58,13 @@ This app also uses peer-to-peer networking to synchronise data between the watch
 🔨 | Display watch battery level on phone
 ❌ | Manage running apps on watch
 
+🎶 | Music control
+---|---------------------
+🔨 | Watch UI
+❌ | Apple Music
+❌ | Google Play Music
+❌ | Spotify
+
 ## Supported Devices
 
 Device                          | Support

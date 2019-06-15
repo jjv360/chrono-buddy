@@ -5,8 +5,11 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.View
+import android.view.*
+import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+import android.view.WindowManager.LayoutParams.*
 import android.widget.ImageView
+import androidx.appcompat.app.AppCompatActivity
 import com.github.sumimakito.awesomeqr.AwesomeQrRenderer
 import com.github.sumimakito.awesomeqr.option.RenderOption
 import com.github.sumimakito.awesomeqr.option.color.Color
@@ -18,7 +21,7 @@ import nl.komponents.kovenant.then
 import nl.komponents.kovenant.ui.promiseOnUi
 import nl.komponents.kovenant.ui.successUi
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -130,6 +133,14 @@ class MainActivity : Activity() {
 
         // Show it
         setContentView(face)
+
+        // Add gesture recognizer to bring up the menu
+        face.setOnClickListener {
+
+            // Show menu
+            startActivity(Intent(this, MenuActivity::class.java))
+
+        }
 
     }
 
